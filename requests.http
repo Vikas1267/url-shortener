@@ -1,0 +1,21 @@
+@baseUrl = http://localhost:8080
+@shortCode = q0V
+
+### Shorten a long URL
+# @name shorten
+POST {{baseUrl}}/api/shorten
+Content-Type: application/json
+
+{
+  "longUrl": "https://example.com/some/very/long/path?query=1"
+}
+
+> {% client.global.set("shortCode", response.body.shortCode); %}
+
+### Redirect to the original URL
+GET {{baseUrl}}/{{shortCode}}
+Referer: https://twitter.com
+User-Agent: IntelliJ HTTP Client
+
+### Fetch click stats
+GET {{baseUrl}}/api/stats/{{shortCode}}

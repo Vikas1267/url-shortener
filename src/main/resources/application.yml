@@ -1,0 +1,27 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: url-shortener
+  datasource:
+    url: jdbc:postgresql://localhost:5432/urlshortener
+    username: postgres
+    password: postgres
+    hikari:
+      connection-timeout: 3000
+      connection-init-sql: SET statement_timeout TO '5s'
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  short-code:
+    offset: 100000
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
