@@ -53,6 +53,7 @@ public class AppConfig {
 		}
 
 		HikariConfig config = new HikariConfig();
+		config.setDriverClassName("org.postgresql.Driver");
 		config.setJdbcUrl(url);
 		config.setUsername(username);
 		config.setPassword(password);
