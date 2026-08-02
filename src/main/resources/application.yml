@@ -1,12 +1,15 @@
+server:
+  port: ${PORT:8080}
+
 spring:
   config:
     import: optional:file:.env[.properties]
   application:
     name: url-shortener
   datasource:
-    url: jdbc:postgresql://localhost:5432/urlshortener
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://localhost:5432/urlshortener}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DATABASE_USERNAME:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DATABASE_PASSWORD:postgres}}
     hikari:
       connection-timeout: 3000
       connection-init-sql: SET statement_timeout TO '5s'
@@ -25,3 +28,4 @@ app:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
