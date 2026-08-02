@@ -57,6 +57,11 @@ public class GlobalExceptionHandler {
 		return error(HttpStatus.GONE, ex.getMessage(), ex);
 	}
 
+	@ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+	ResponseEntity<ErrorResponse> handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+		return error(HttpStatus.NOT_FOUND, "Resource not found", ex);
+	}
+
 	@ExceptionHandler(Exception.class)
 	ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
 		return error(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected server error", ex);
