@@ -1,22 +1,23 @@
 package com.om.urlshortener.config;
 
+import java.net.URI;
 import java.time.Clock;
 import java.util.concurrent.Executor;
+import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-
-import javax.sql.DataSource;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Primary;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 
 @Configuration
 public class AppConfig {
@@ -41,22 +42,42 @@ public class AppConfig {
 	@Primary
 	DataSource dataSource(
 			@Value("${spring.datasource.url}") String rawUrl,
-			@Value("${spring.datasource.username:postgres}") String username,
-			@Value("${spring.datasource.password:postgres}") String password
+			@Value("${spring.datasource.username:postgres}") String fallbackUsername,
+			@Value("${spring.datasource.password:postgres}") String fallbackPassword
 	) {
 		String url = rawUrl != null ? rawUrl.trim() : "";
-		if (url.startsWith("postgres://")) {
-			url = "jdbc:postgresql://" + url.substring("postgres://".length());
-		}
-		else if (url.startsWith("postgresql://")) {
-			url = "jdbc:postgresql://" + url.substring("postgresql://".length());
+		String finalUsername = fallbackUsername;
+		String finalPassword = fallbackPassword;
+		String finalJdbcUrl = url;
+
+		if (url.startsWith("postgres://") || url.startsWith("postgresql://")) {
+			try {
+				String cleanUrl = url.startsWith("postgres://")
+						? "http://" + url.substring("postgres://".length())
+						: "http://" + url.substring("postgresql://".length());
+				URI uri = new URI(cleanUrl);
+				String host = uri.getHost();
+				int port = uri.getPort() > 0 ? uri.getPort() : 5432;
+				String path = uri.getPath();
+
+				if (uri.getUserInfo() != null && uri.getUserInfo().contains(":")) {
+					String[] parts = uri.getUserInfo().split(":", 2);
+					finalUsername = parts[0];
+					finalPassword = parts[1];
+				}
+
+				finalJdbcUrl = "jdbc:postgresql://" + host + ":" + port + path;
+			}
+			catch (Exception ex) {
+				finalJdbcUrl = url.replaceFirst("^postgres(ql)?://", "jdbc:postgresql://");
+			}
 		}
 
 		HikariConfig config = new HikariConfig();
 		config.setDriverClassName("org.postgresql.Driver");
-		config.setJdbcUrl(url);
-		config.setUsername(username);
-		config.setPassword(password);
+		config.setJdbcUrl(finalJdbcUrl);
+		config.setUsername(finalUsername);
+		config.setPassword(finalPassword);
 		config.setConnectionTimeout(3000);
 		config.setConnectionInitSql("SET statement_timeout TO '5s'");
 		return new HikariDataSource(config);
