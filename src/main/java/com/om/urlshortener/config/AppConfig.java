@@ -12,6 +12,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 
+import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 @Configuration
 public class AppConfig {
 
@@ -29,6 +35,30 @@ public class AppConfig {
 		executor.setThreadNamePrefix("click-log-");
 		executor.initialize();
 		return executor;
+	}
+
+	@Bean
+	@Primary
+	DataSource dataSource(
+			@Value("${spring.datasource.url}") String rawUrl,
+			@Value("${spring.datasource.username:postgres}") String username,
+			@Value("${spring.datasource.password:postgres}") String password
+	) {
+		String url = rawUrl != null ? rawUrl.trim() : "";
+		if (url.startsWith("postgres://")) {
+			url = "jdbc:postgresql://" + url.substring("postgres://".length());
+		}
+		else if (url.startsWith("postgresql://")) {
+			url = "jdbc:postgresql://" + url.substring("postgresql://".length());
+		}
+
+		HikariConfig config = new HikariConfig();
+		config.setJdbcUrl(url);
+		config.setUsername(username);
+		config.setPassword(password);
+		config.setConnectionTimeout(3000);
+		config.setConnectionInitSql("SET statement_timeout TO '5s'");
+		return new HikariDataSource(config);
 	}
 
 	@Bean
@@ -54,4 +84,5 @@ public class AppConfig {
 						.description("High-performance Spring Boot URL shortener REST API with Base62 encoding and click analytics."));
 	}
 }
+
 
