@@ -1,4 +1,4 @@
-# ⚡ Snipr — High-Performance URL Shortener & Analytics API
+# ⚡ Shortly — URL Shortener API with Analytics (2026)
 
 [![Java 17](https://img.shields.io/badge/Java-17%2B-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
