@@ -35,6 +35,14 @@ public class RedirectController {
 		this.clickService = clickService;
 	}
 
+	@Operation(summary = "Root Endpoint Redirect", description = "Redirects root URL requests to interactive Swagger UI documentation.")
+	@GetMapping("/")
+	ResponseEntity<Void> home() {
+		return ResponseEntity.status(HttpStatus.FOUND)
+				.location(URI.create("/swagger-ui/index.html"))
+				.build();
+	}
+
 	@Operation(
 			summary = "Redirect to target URL",
 			description = "Resolves the Base62 short code, logs click analytics asynchronously, and returns HTTP 302 Found with the target long URL in the Location header. Pass `redirect=false` to return a JSON payload directly without performing a 302 browser redirect (ideal for Swagger UI testing)."
